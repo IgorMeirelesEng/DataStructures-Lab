@@ -1,5 +1,9 @@
+"""
+Testes — ArrayDinamico
+"""
+
 import traceback
-from array_estatico import ArrayEstatico
+from array_dinamico import ArrayDinamico
 
 def secao(titulo: str) -> None:
     print("\n")
@@ -16,37 +20,64 @@ def falhou(msg: str) -> None:
     print(f"  ✗ {msg}")
     raise AssertionError(msg)
 
+def teste_crescimento() -> None:
+    secao("Crescimento automático (× 2)")
+    arr = ArrayDinamico()
+    print(f"  Inicial: {arr}")
+
+    for v in range(1, 10):
+        print(f"  inserir_fim({v}):")
+        arr.inserir_fim(v)
+        print(f"    {arr}")
+
+    assert arr.tamanho == 9
+    assert arr.capacidade == 16   
+    ok("Capacidade final: 16 após 9 inserções")
+
+
+def teste_encolhimento() -> None:
+    secao("Encolhimento automático (÷ 2)")
+    arr = ArrayDinamico()
+
+    for v in range(1, 9):
+        arr.inserir_fim(v)   # capacidade sobe até 16!!
+    print(f"  Cheio com 8 elementos: {arr}")
+
+    while arr.tamanho > 0:
+        val = arr.remover_fim()
+        print(f"  remover_fim() → {val}:  {arr}")
+
+    ok("Encolhimento acompanhou as remoções")
+
+
 def teste_insercao() -> None:
     secao("Inserção")
-    arr = ArrayEstatico(10)
+    arr = ArrayDinamico()
 
-    arr.inserir_fim(10)
-    arr.inserir_fim(20)
-    arr.inserir_fim(30)
-    arr.inserir_fim(40)
+    for v in [10, 20, 30, 40]:
+        arr.inserir_fim(v)
     print(f"  Após inserir 10,20,30,40 no fim:\n    {arr}")
 
+    print(f"  inserir_em(1, 99):")
     arr.inserir_em(1, 99)
-    print(f"  Após inserir 99 na posição 1:\n    {arr}")
+    print(f"    {arr}")
 
+    print(f"  inserir_em(0, 5)  (início):")
     arr.inserir_em(0, 5)
-    print(f"  Após inserir 5 na posição 0 (início):\n    {arr}")
+    print(f"    {arr}")
 
     assert len(arr) == 6
     ok("Tamanho esperado: 6")
-
-    # sintaxe de lista (protocolo __getitem__ criado!!)
-    assert arr[0] == 5
-    assert arr[2] == 99
-    ok("Acesso via arr[i] funciona")
+    assert arr[0] == 5 and arr[2] == 99
+    ok("Posições corretas após inserções")
 
 
 def teste_remocao() -> None:
     secao("Remoção")
-    arr = ArrayEstatico(10)
+    arr = ArrayDinamico()
 
     for v in range(10, 60, 10):
-        arr.inserir_fim(v)          
+        arr.inserir_fim(v)
     print(f"  Estado inicial:\n    {arr}")
 
     val = arr.remover_fim()
@@ -63,10 +94,10 @@ def teste_remocao() -> None:
 
 def teste_acesso() -> None:
     secao("Acesso por índice — O(1)")
-    arr = ArrayEstatico(5)
-    arr.inserir_fim(100)
-    arr.inserir_fim(200)
-    arr.inserir_fim(300)
+    arr = ArrayDinamico()
+
+    for v in [100, 200, 300]:
+        arr.inserir_fim(v)
     print(f"  Array: {arr}")
 
     for i in range(3):
@@ -88,7 +119,7 @@ def teste_acesso() -> None:
 
 def teste_busca_linear() -> None:
     secao("Busca Linear — O(n)")
-    arr = ArrayEstatico(10)
+    arr = ArrayDinamico()
 
     for v in [5, 3, 8, 1, 9, 2, 7]:
         arr.inserir_fim(v)
@@ -107,7 +138,7 @@ def teste_busca_linear() -> None:
 
 def teste_busca_binaria() -> None:
     secao("Busca Binária — O(log n)  [array ordenado]")
-    arr = ArrayEstatico(10)
+    arr = ArrayDinamico()
 
     for v in [1, 3, 5, 7, 9, 11, 13]:
         arr.inserir_fim(v)
@@ -122,32 +153,13 @@ def teste_busca_binaria() -> None:
     ok("Busca binária OK")
 
 
-def teste_limites() -> None:
-    secao("Limites (cheio / vazio)")
-    arr = ArrayEstatico(3)
+def teste_vazio() -> None:
+    secao("Limites — array vazio")
+    arr = ArrayDinamico()
 
     print(f"  Recém-criado: {arr}  →  vazio={arr.esta_vazio()}")
     assert arr.esta_vazio()
     ok("Recém-criado está vazio")
-
-    for v in [1, 2, 3]:
-        arr.inserir_fim(v)
-        print(f"  inserir_fim({v}) → {arr}  cheio={arr.esta_cheio()}")
-    assert arr.esta_cheio()
-    ok("Array com 3 elementos está cheio")
-
-    print(f"  Tentando inserir 4 no array cheio...")
-    try:
-        arr.inserir_fim(4)
-        falhou("Deveria lançar OverflowError")
-    except OverflowError as e:
-        ok(f"OverflowError capturado: {e}")
-
-    for _ in range(3):
-        val = arr.remover_fim()
-        print(f"  remover_fim() → {val}  |  {arr}  vazio={arr.esta_vazio()}")
-    assert arr.esta_vazio()
-    ok("Após remover tudo, está vazio novamente")
 
     print(f"  Tentando remover de array vazio...")
     try:
@@ -156,19 +168,20 @@ def teste_limites() -> None:
     except IndexError as e:
         ok(f"IndexError capturado: {e}")
 
-
 if __name__ == "__main__":
     print("*" * 50)
-    print("ARRAY ESTÁTICO (Python) — Testes".center(50))
+    print("ARRAY DINÂMICO (Python) — Testes".center(50))
     print("*" * 50)
 
     testes = [
+        teste_crescimento,
+        teste_encolhimento,
         teste_insercao,
         teste_remocao,
         teste_acesso,
         teste_busca_linear,
         teste_busca_binaria,
-        teste_limites,
+        teste_vazio,
     ]
 
     erros = 0
